@@ -1,6 +1,15 @@
-from src.models.ingredient import Ingredient  # noqa: F401, E261, E501
+from src.models.ingredient import Ingredient, Restriction
 
 
-# Req 1
 def test_ingredient():
-    pass
+    ingredient1 = Ingredient('farinha')
+    ingredient2 = Ingredient('bacon')
+    ingredient3 = Ingredient('farinha')
+
+    assert ingredient1.__hash__() == ingredient3.__hash__()
+    assert ingredient1.__hash__() != ingredient2.__hash__()
+    assert ingredient1.__eq__(ingredient3)
+    assert ingredient1.__repr__() == "Ingredient('farinha')"
+    assert ingredient1.name == 'farinha'
+    assert ingredient2.name != 'veganbacon'
+    assert ingredient1.restrictions == {Restriction.GLUTEN}
