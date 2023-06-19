@@ -1,5 +1,4 @@
 import pandas as pd
-
 from services.inventory_control import InventoryMapping
 from services.menu_data import MenuData
 
@@ -13,17 +12,34 @@ class MenuBuilder:
         self.inventory = InventoryMapping(inventory_path)
 
     def make_order(self, dish_name: str):
-        try:
-            curr_dish = [
-                dish
-                for dish in self.menu_data.dishes
-                if dish.name == dish_name
-            ][0]
-        except IndexError:
+        curr_dish = next(
+            (dish for dish in self.menu_data.dishes if dish.name == dish_name),
+            None,
+        )
+        if curr_dish is None:
             raise ValueError("Dish does not exist")
-
         self.inventory.consume_recipe(curr_dish.recipe)
 
-    # Req 4
     def get_main_menu(self, restriction=None) -> pd.DataFrame:
-        pass
+        filtered_dishes = [
+            dish
+            for dish in self.menu_data.dishes
+            if not restriction or restriction not in dish.get_restrictions()
+        ]
+
+        dish_data = {
+            "dish_name": [dish.name for dish in filtered_dishes],
+            "ingredients": [
+                ", ".join(
+                    str(ingredient) for ingredient in dish.get_ingredients()
+                )
+                for dish in filtered_dishes
+            ],
+            "price": [dish.price for dish in filtered_dishes],
+            "restrictions": [
+                ", ".join(str(r) for r in dish.get_restrictions())
+                for dish in filtered_dishes
+            ],
+        }
+
+        return pd.DataFrame(dish_data)

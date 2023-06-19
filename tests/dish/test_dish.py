@@ -1,38 +1,39 @@
+import pytest
 from src.models.dish import Dish
 from src.models.ingredient import Ingredient, Restriction
-import pytest
 
 
 def test_dish():
-    prato1 = Dish("Rabanada", 8.5)
-    prato2 = Dish("Brioche", 6.0)
+    dish = Dish("pizza", 20.0)
+    dish2 = Dish("carne", 10.0)
 
-    prato1.add_ingredient_dependency(Ingredient("ovos"), 4)
+    assert dish.name == "pizza"
+    assert dish.price == 20.0
+    assert dish.recipe == {}
 
-    with pytest.raises(
-        TypeError, match="O preço do prato deve ser um número real."
-    ):
-        Dish("Rabanada", "precoteste")
+    assert repr(dish) == "Dish('pizza', R$20.00)"
+    assert dish == dish
+    assert dish != dish2
 
-    with pytest.raises(
-        ValueError, match="O preço do prato deve ser maior que zero."
-    ):
-        Dish("Rabanada", 0)
+    assert hash(dish) == hash(dish)
+    assert hash(dish) != hash(dish2)
 
-    assert prato1.nome == "Rabanada"
+    ingredient1 = Ingredient("massa de lasanha")
+    ingredient2 = Ingredient("massa de ravioli")
 
-    assert hash(prato1) == hash(prato1)
-    assert hash(prato1) != hash(prato2)
+    dish.add_ingredient_dependency(ingredient1, 5)
+    dish.add_ingredient_dependency(ingredient2, 10)
 
-    assert prato1 == prato1
+    assert dish.recipe == {ingredient1: 5, ingredient2: 10}
 
-    assert repr(prato1) == "Dish('Rabanada', R$8.50)"
+    assert dish.get_restrictions() == {Restriction.LACTOSE, Restriction.GLUTEN}
+    assert dish.get_ingredients() == {ingredient1, ingredient2}
 
-    assert prato1.receita.get(Ingredient("ovos")) == 4
+    with pytest.raises(TypeError):
+        Dish("pao", "one")
 
-    assert prato1.obter_restricoes() == {
-        Restriction.ANIMAL_DERIVED,
-        Restriction.EGG,
-    }
+    with pytest.raises(ValueError):
+        Dish("pao", -1.0)
 
-    assert prato1.obter_ingredientes() == {Ingredient("ovos")}
+    with pytest.raises(ValueError):
+        Dish("pao", 0.0)
