@@ -21,25 +21,25 @@ class MenuBuilder:
         self.inventory.consume_recipe(curr_dish.recipe)
 
     def get_main_menu(self, restriction=None) -> pd.DataFrame:
-        filtered_dishes = [
-            dish
-            for dish in self.menu_data.dishes
-            if not restriction or restriction not in dish.get_restrictions()
+        dishes = [
+            {
+                "dish_name": dish.name,
+                "ingredients": dish.get_ingredients(),
+                "price": dish.price,
+                "restrictions": dish.get_restrictions(),
+            }
+            for dish in menu.menu_data.dishes
         ]
-
-        dish_data = {
-            "dish_name": [dish.name for dish in filtered_dishes],
-            "ingredients": [
-                ", ".join(
-                    str(ingredient) for ingredient in dish.get_ingredients()
+        df = pd.DataFrame(dishes)
+        if restriction is not None:
+            print(restriction)
+            return df.loc[
+                df["restrictions"].apply(
+                    lambda restrictions: restriction not in restrictions
                 )
-                for dish in filtered_dishes
-            ],
-            "price": [dish.price for dish in filtered_dishes],
-            "restrictions": [
-                ", ".join(str(r) for r in dish.get_restrictions())
-                for dish in filtered_dishes
-            ],
-        }
+            ]
+        else:
+            return df
 
-        return pd.DataFrame(dish_data)
+
+menu = MenuBuilder()
